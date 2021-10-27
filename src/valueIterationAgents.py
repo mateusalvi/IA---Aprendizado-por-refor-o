@@ -46,25 +46,17 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
         currentIteration = 0
-        
-        while currentIteration < iterations:
-            for state in mdp.getStates():
-                for action in mdp.getPossibleActions(state):
-                    totalTransitionValue = 0
-                    transitions = mdp.getTransitionStatesAndProbs(state, action)
-                    for transition in transitions:
-                        if mdp.isTerminal(transition[0]):
-                            totalTransitionValue = mdp.getReward(state, action, transition[0])
-                        else:
-                            transitionValue = self.values.get(transition[0])
-                            if transitionValue == None: transitionValue = 0 #Pois está pegando None e não 0 quando ainda n tem valor
-                            transitionValue = transitionValue * transition[1]
-                            totalTransitionValue = discount*(totalTransitionValue + transitionValue)
-                    if self.values.get(state) == None or totalTransitionValue > self.values.get(state):
-                        self.values.update({state: totalTransitionValue})
-                    else: pass
-            currentIteration = currentIteration + 1
 
+        while currentIteration < iterations:
+            lastValues = util.Counter()
+
+            for state in mdp.getStates():
+                if state != 'TERMINAL_STATE':
+                    action = self.computeActionFromValues(state)
+                    lastValues[state] = self.computeQValueFromValues(state, action)
+            self.values = lastValues
+            
+            currentIteration = currentIteration + 1
 
     def getValue(self, state):
         """
@@ -80,10 +72,12 @@ class ValueIterationAgent(ValueEstimationAgent):
         "*** YOUR CODE HERE ***"
         totalTransitionValue = 0
         for transition in self.mdp.getTransitionStatesAndProbs(state, action):
-            transitionValue = self.values.get(transition[0])
-            print(state, transitionValue, transition)
-            transitionValue = transitionValue * transition[1]                        
+            if transition[0] == 'TERMINAL_STATE':
+                transitionValue = self.mdp.getReward(state, action, transition[0]) * transition[1]
+            else:
+                transitionValue = self.getValue(transition[0]) * transition[1]  * self.discount
             totalTransitionValue = totalTransitionValue + transitionValue
+
         return totalTransitionValue
 
     def computeActionFromValues(self, state):
@@ -96,14 +90,18 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        bestAction = None
-        lastValue = 0
-        for action in self.mdp.getPossibleActions(state):
-            transitionValue = self.computeQValueFromValues(state, action)
-            #transitionValue = self.getValue(state)
-            if transitionValue > lastValue:
-                bestAction = action
-        return bestAction
+        actions = dict()
+
+        if self.mdp.isTerminal(state):
+            return None
+        else:
+            for action in self.mdp.getPossibleActions(state):
+
+                actionValue = self.computeQValueFromValues(state, action) 
+                actions[action] = actionValue
+        
+        max_key = max(actions, key=actions.get)
+        return max_key
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
