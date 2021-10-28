@@ -41,7 +41,9 @@ class QLearningAgent(ReinforcementAgent):
     def __init__(self, **args):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
-
+    
+        self.table = util.Counter()
+      
         "*** YOUR CODE HERE ***"
 
     def getQValue(self, state, action):
@@ -51,7 +53,32 @@ class QLearningAgent(ReinforcementAgent):
           or the Q node value otherwise
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        stateb = 0
+
+        if(action == "north"):
+            stateb = 0
+        
+        if(action == "west"):
+            stateb = 1
+
+        if(action == "east"):
+            stateb = 2
+
+        if(action == "south"):
+            stateb = 3
+        
+        if(action == "exit"):
+            stateb = 4
+
+        
+        if state in self.table.keys():
+            return self.table[state][stateb]
+        
+        else:
+            self.table[state] = [0.0,0.0,0.0,0.0,0.0]
+            
+        
+        return self.table[state][stateb]
 
 
     def computeValueFromQValues(self, state):
@@ -62,7 +89,30 @@ class QLearningAgent(ReinforcementAgent):
           terminal state, you should return a value of 0.0.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        list_qvalues = []
+
+        actions = self.getLegalActions(state)
+        i=0
+        for i in range(len(actions)):
+            if(actions[i] == "north"):
+                list_qvalues.append(QLearningAgent.getQValue(self, state,"north"))
+            if(actions[i] == "west"):
+                list_qvalues.append(QLearningAgent.getQValue(self, state, "west"))
+            if(actions[i] == "east"):
+                list_qvalues.append(QLearningAgent.getQValue(self, state, "east"))
+            if(actions[i] == "south"):
+                list_qvalues.append(QLearningAgent.getQValue(self, state, "south"))
+            if(actions[i] == "exit"):
+                list_qvalues.append(QLearningAgent.getQValue(self, state, "exit"))
+        
+        if not list_qvalues:
+            return 0.0
+
+        else:
+            list_qvalues.sort()
+            return list_qvalues.pop()
+
 
     def computeActionFromQValues(self, state):
         """
@@ -71,7 +121,36 @@ class QLearningAgent(ReinforcementAgent):
           you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        #north #0
+        #west #1
+        #east #2
+        #south #3
+        #exit #4
+
+        max_q = 0
+       
+        actions = []
+        actions = self.getLegalActions(state)
+        max_q = QLearningAgent.computeValueFromQValues(self, state)
+
+        if not actions:
+            return None
+
+        winners = []
+        if(max_q == QLearningAgent.getQValue(self, state, "north")):
+          winners.append("north")
+        if(max_q == QLearningAgent.getQValue(self, state,"west")):
+          winners.append("west")
+        if(max_q == QLearningAgent.getQValue(self, state,"east")):
+          winners.append("east")
+        if(max_q == QLearningAgent.getQValue(self, state,"south")):
+          winners.append("south")
+        if(max_q == QLearningAgent.getQValue(self, state,"exit")):
+          winners.append("exit")
+
+        best_action = random.choice(winners)
+        return best_action
 
     def getAction(self, state):
         """
@@ -85,10 +164,20 @@ class QLearningAgent(ReinforcementAgent):
           HINT: To pick randomly from a list, use random.choice(list)
         """
         # Pick Action
-        legalActions = self.getLegalActions(state)
         action = None
+
+        legalActions = self.getLegalActions(state)
+        
+
+        if not legalActions:
+            return None
+
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if util.flipCoin(self.epsilon):
+          action = random.choice(legalActions)
+
+        else:
+          action = QLearningAgent.computeActionFromQValues(self, state)
 
         return action
 
@@ -96,13 +185,42 @@ class QLearningAgent(ReinforcementAgent):
         """
           The parent class calls this to observe a
           state = action => nextState and reward transition.
-          You should do your Q-Value update here
-
+          You should do your Q-Value update here         
           NOTE: You should never call this function,
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        act = None
+        act = QLearningAgent.getAction(self, nextState)
+
+        stateb=4
+        if(action == "north"):
+            stateb = 0
+        
+        if(action == "west"):
+            stateb = 1
+
+        if(action == "east"):
+            stateb = 2
+
+        if(action == "south"):
+            stateb = 3
+
+      
+        value_prob = 0.0
+        value_prob = QLearningAgent.getQValue(self, nextState, act)
+
+        #Q Value pra questão 4
+        #qvalue_new = (1 - self.alpha)* QLearningAgent.getQValue(self, state, action) + self.alpha*(reward + self.discount*QLearningAgent.computeValueFromQValues(self, nextState))
+      
+        #Q Value pra questão 5
+        qvalue_new = (1 - self.alpha)* QLearningAgent.getQValue(self, state, action) + self.alpha*(reward + self.discount*value_prob)
+
+        self.table[state][stateb]  = qvalue_new
+        #print(self.epsilon)
+
+  
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
