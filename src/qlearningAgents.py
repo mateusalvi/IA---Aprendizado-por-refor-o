@@ -138,16 +138,19 @@ class QLearningAgent(ReinforcementAgent):
             return None
 
         winners = []
-        if(max_q == QLearningAgent.getQValue(self, state, "north")):
+        if((max_q == QLearningAgent.getQValue(self, state, "north")) and ("north" in actions)):
           winners.append("north")
-        if(max_q == QLearningAgent.getQValue(self, state,"west")):
+        if((max_q == QLearningAgent.getQValue(self, state, "west")) and ("west" in actions)):
           winners.append("west")
-        if(max_q == QLearningAgent.getQValue(self, state,"east")):
+        if((max_q == QLearningAgent.getQValue(self, state, "east")) and ("east" in actions)):
           winners.append("east")
-        if(max_q == QLearningAgent.getQValue(self, state,"south")):
+        if((max_q == QLearningAgent.getQValue(self, state, "south")) and ("south" in actions)):
           winners.append("south")
-        if(max_q == QLearningAgent.getQValue(self, state,"exit")):
+        if((max_q == QLearningAgent.getQValue(self, state, "exit")) and ("exit" in actions)):
           winners.append("exit")
+
+        if not winners:
+            return None
 
         best_action = random.choice(winners)
         return best_action
@@ -175,9 +178,11 @@ class QLearningAgent(ReinforcementAgent):
         "*** YOUR CODE HERE ***"
         if util.flipCoin(self.epsilon):
           action = random.choice(legalActions)
+          #print("random", action)
 
         else:
           action = QLearningAgent.computeActionFromQValues(self, state)
+          #print("max", action)
 
         return action
 
@@ -191,8 +196,8 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        act = None
-        act = QLearningAgent.getAction(self, nextState)
+        #act = None
+        #act = QLearningAgent.getAction(self, nextState)
 
         stateb=4
         if(action == "north"):
@@ -207,15 +212,23 @@ class QLearningAgent(ReinforcementAgent):
         if(action == "south"):
             stateb = 3
 
-      
-        value_prob = 0.0
-        value_prob = QLearningAgent.getQValue(self, nextState, act)
+        print("brunaaaaaaa")
+        #value_prob = 0.0
+        #value_prob = QLearningAgent.getQValue(self, nextState, act)
 
         #Q Value pra questão 4
-        #qvalue_new = (1 - self.alpha)* QLearningAgent.getQValue(self, state, action) + self.alpha*(reward + self.discount*QLearningAgent.computeValueFromQValues(self, nextState))
-      
+        print(action)
+        qvalue_new = (1 - self.alpha)* QLearningAgent.getQValue(self, state, action) + self.alpha*(reward + self.discount*QLearningAgent.computeValueFromQValues(self, nextState))
+        
+        #print(state)
+        #actions1 = self.getLegalActions(state)
+        #print(actions1)
+        #print(nextState)
+        #actions2 = self.getLegalActions(nextState)
+        #print(actions2)
+
         #Q Value pra questão 5
-        qvalue_new = (1 - self.alpha)* QLearningAgent.getQValue(self, state, action) + self.alpha*(reward + self.discount*value_prob)
+        #qvalue_new = (1 - self.alpha)* QLearningAgent.getQValue(self, state, action) + self.alpha*(reward + self.discount*value_prob)
 
         self.table[state][stateb]  = qvalue_new
         #print(self.epsilon)
