@@ -56,11 +56,14 @@ class QLearningAgent(ReinforcementAgent):
         if action not in self.actions.keys():
             self.actions[action] = self.actions_index
             self.actions_index += 1
-    
+            for i in self.table.values():
+                while len(i) < self.actions_index + 1:
+                    i.append(0.0)
+
         if state in self.table.keys():
             return self.table[state][self.actions[action]]
         else:
-            self.table[state] = [0.0, 0.0, 0.0, 0.0, 0.0]
+            self.table[state] = [0.0 for _ in self.actions.keys()]
 
         return self.table[state][self.actions[action]]
 
@@ -92,17 +95,7 @@ class QLearningAgent(ReinforcementAgent):
           are no legal actions, which is the case at the terminal state,
           you should return None.
         """
-        "*** YOUR CODE HERE ***"
 
-        # north #0
-        # west #1
-        # east #2
-        # south #3
-        # exit #4
-
-        max_q = 0
-
-        actions = []
         actions = self.getLegalActions(state)
         max_q = QLearningAgent.computeValueFromQValues(self, state)
 
@@ -110,16 +103,9 @@ class QLearningAgent(ReinforcementAgent):
             return None
 
         winners = []
-        if ((max_q == QLearningAgent.getQValue(self, state, "north")) and ("north" in actions)):
-            winners.append("north")
-        if ((max_q == QLearningAgent.getQValue(self, state, "west")) and ("west" in actions)):
-            winners.append("west")
-        if ((max_q == QLearningAgent.getQValue(self, state, "east")) and ("east" in actions)):
-            winners.append("east")
-        if ((max_q == QLearningAgent.getQValue(self, state, "south")) and ("south" in actions)):
-            winners.append("south")
-        if ((max_q == QLearningAgent.getQValue(self, state, "exit")) and ("exit" in actions)):
-            winners.append("exit")
+        for i in self.actions.keys():
+            if max_q == QLearningAgent.getQValue(self, state, i) and i in actions:
+                winners.append(i)
         if not winners:
             return None
 
@@ -159,8 +145,6 @@ class QLearningAgent(ReinforcementAgent):
           NOTE: You should never call this function,
           it will be called on your behalf
         """
-        "*** YOUR CODE HERE ***"
-
         # act = None
         # act = QLearningAgent.getAction(self, nextState)
 
