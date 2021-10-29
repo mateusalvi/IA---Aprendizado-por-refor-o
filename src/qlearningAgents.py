@@ -16,7 +16,8 @@ from game import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
 
-import random,util,math
+import random, util, math
+
 
 class QLearningAgent(ReinforcementAgent):
     """
@@ -38,40 +39,30 @@ class QLearningAgent(ReinforcementAgent):
         - self.getLegalActions(state)
           which returns legal actions for a state
     """
+
     def __init__(self, **args):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
-    
+
         self.table = util.Counter()
-      
-        "*** YOUR CODE HERE ***"
+        self.actions = util.Counter()
+        self.actions_index = 0
 
     def getQValue(self, state, action):
-        """
-          Returns Q(state,action)
+        """Returns Q(state,action)
           Should return 0.0 if we have never seen a state
-          or the Q node value otherwise
-        """
-        "*** YOUR CODE HERE ***"
-        stateb = 0
+          or the Q node value otherwise"""
 
-        if(action == "north"):
-            stateb = 0
-        if(action == "west"):
-            stateb = 1
-        if(action == "east"):
-            stateb = 2
-        if(action == "south"):
-            stateb = 3
-        if(action == "exit"):
-            stateb = 4
-
+        if action not in self.actions.keys():
+            self.actions[action] = self.actions_index
+            self.actions_index += 1
+    
         if state in self.table.keys():
-            return self.table[state][stateb]
+            return self.table[state][self.actions[action]]
         else:
-            self.table[state] = [0.0,0.0,0.0,0.0,0.0]
-            
-        return self.table[state][stateb]
+            self.table[state] = [0.0, 0.0, 0.0, 0.0, 0.0]
+
+        return self.table[state][self.actions[action]]
 
     def computeValueFromQValues(self, state):
         """
@@ -80,31 +71,20 @@ class QLearningAgent(ReinforcementAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
         """
-        "*** YOUR CODE HERE ***"
 
         list_qvalues = []
 
         actions = self.getLegalActions(state)
-        i=0
-        for i in range(len(actions)):
-            if(actions[i] == "north"):
-                list_qvalues.append(QLearningAgent.getQValue(self, state,"north"))
-            if(actions[i] == "west"):
-                list_qvalues.append(QLearningAgent.getQValue(self, state, "west"))
-            if(actions[i] == "east"):
-                list_qvalues.append(QLearningAgent.getQValue(self, state, "east"))
-            if(actions[i] == "south"):
-                list_qvalues.append(QLearningAgent.getQValue(self, state, "south"))
-            if(actions[i] == "exit"):
-                list_qvalues.append(QLearningAgent.getQValue(self, state, "exit"))
-        
+
+        for i in actions:
+            list_qvalues.append(QLearningAgent.getQValue(self, state, i))
+
         if not list_qvalues:
             return 0.0
 
         else:
             list_qvalues.sort()
             return list_qvalues.pop()
-
 
     def computeActionFromQValues(self, state):
         """
@@ -114,14 +94,14 @@ class QLearningAgent(ReinforcementAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        #north #0
-        #west #1
-        #east #2
-        #south #3
-        #exit #4
+        # north #0
+        # west #1
+        # east #2
+        # south #3
+        # exit #4
 
         max_q = 0
-       
+
         actions = []
         actions = self.getLegalActions(state)
         max_q = QLearningAgent.computeValueFromQValues(self, state)
@@ -130,16 +110,16 @@ class QLearningAgent(ReinforcementAgent):
             return None
 
         winners = []
-        if((max_q == QLearningAgent.getQValue(self, state, "north")) and ("north" in actions)):
-          winners.append("north")
-        if((max_q == QLearningAgent.getQValue(self, state, "west")) and ("west" in actions)):
-          winners.append("west")
-        if((max_q == QLearningAgent.getQValue(self, state, "east")) and ("east" in actions)):
-          winners.append("east")
-        if((max_q == QLearningAgent.getQValue(self, state, "south")) and ("south" in actions)):
-          winners.append("south")
-        if((max_q == QLearningAgent.getQValue(self, state, "exit")) and ("exit" in actions)):
-          winners.append("exit")
+        if ((max_q == QLearningAgent.getQValue(self, state, "north")) and ("north" in actions)):
+            winners.append("north")
+        if ((max_q == QLearningAgent.getQValue(self, state, "west")) and ("west" in actions)):
+            winners.append("west")
+        if ((max_q == QLearningAgent.getQValue(self, state, "east")) and ("east" in actions)):
+            winners.append("east")
+        if ((max_q == QLearningAgent.getQValue(self, state, "south")) and ("south" in actions)):
+            winners.append("south")
+        if ((max_q == QLearningAgent.getQValue(self, state, "exit")) and ("exit" in actions)):
+            winners.append("exit")
         if not winners:
             return None
 
@@ -158,19 +138,16 @@ class QLearningAgent(ReinforcementAgent):
           HINT: To pick randomly from a list, use random.choice(list)
         """
         # Pick Action
-        action = None
 
         legalActions = self.getLegalActions(state)
-        
 
         if not legalActions:
             return None
 
-        "*** YOUR CODE HERE ***"
         if util.flipCoin(self.epsilon):
-          action = random.choice(legalActions)
+            action = random.choice(legalActions)
         else:
-          action = QLearningAgent.computeActionFromQValues(self, state)
+            action = QLearningAgent.computeActionFromQValues(self, state)
 
         return action
 
@@ -178,31 +155,19 @@ class QLearningAgent(ReinforcementAgent):
         """
           The parent class calls this to observe a
           state = action => nextState and reward transition.
-          You should do your Q-Value update here         
+          You should do your Q-Value update here
           NOTE: You should never call this function,
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
 
-        #act = None
-        #act = QLearningAgent.getAction(self, nextState)
+        # act = None
+        # act = QLearningAgent.getAction(self, nextState)
 
-        stateb=4
-        if(action == "north"):
-            stateb = 0
-        
-        if(action == "west"):
-            stateb = 1
+        qvalue_new = (1 - self.alpha) * QLearningAgent.getQValue(self, state, action) + self.alpha * (
+                    reward + self.discount * QLearningAgent.computeValueFromQValues(self, nextState))
 
-        if(action == "east"):
-            stateb = 2
-
-        if(action == "south"):
-            stateb = 3
-
-        qvalue_new = (1 - self.alpha)* QLearningAgent.getQValue(self, state, action) + self.alpha*(reward + self.discount*QLearningAgent.computeValueFromQValues(self, nextState))
-
-        self.table[state][stateb]  = qvalue_new
+        self.table[state][self.actions[action]] = qvalue_new
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
@@ -214,7 +179,7 @@ class QLearningAgent(ReinforcementAgent):
 class PacmanQAgent(QLearningAgent):
     "Exactly the same as QLearningAgent, but with different default parameters"
 
-    def __init__(self, epsilon=0.05,gamma=0.8,alpha=0.2, numTraining=0, **args):
+    def __init__(self, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, **args):
         """
         These default parameters can be changed from the pacman.py command line.
         For example, to change the exploration rate, try:
@@ -238,8 +203,8 @@ class PacmanQAgent(QLearningAgent):
         informs parent of action for Pacman.  Do not change or remove this
         method.
         """
-        action = QLearningAgent.getAction(self,state)
-        self.doAction(state,action)
+        action = QLearningAgent.getAction(self, state)
+        self.doAction(state, action)
         return action
 
 
@@ -251,6 +216,7 @@ class ApproximateQAgent(PacmanQAgent):
        and update.  All other QLearningAgent functions
        should work as is.
     """
+
     def __init__(self, extractor='IdentityExtractor', **args):
         self.featExtractor = util.lookup(extractor, globals())()
         PacmanQAgent.__init__(self, **args)
